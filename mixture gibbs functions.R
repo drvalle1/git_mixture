@@ -1,4 +1,4 @@
-update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc){
+update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp){
   log.theta=log(theta)
   log.phi=log(phi)
   log.one.minus.phi=log(1-phi)
