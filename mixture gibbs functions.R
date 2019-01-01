@@ -14,11 +14,15 @@
 #' @param return this function returns a vector with the cluster assignment of each location
 #' @export
 
-update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp){
+update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
   #pre-calculate some useful quantities
   log.theta=log(theta)
   log.phi=log(phi)
   log.one.minus.phi=log(1-phi)
+  
+  tab=rep(0,ngroup)
+  tmp=table(z)
+  tab[as.numeric(names(tmp))]=tmp
   
   #calculate the log probability for each possible group
   tmp=matrix(NA,nloc,ngroup)
@@ -27,12 +31,26 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp){
          one.minus.dat*matrix(log.one.minus.phi[i,],nloc,nspp,byrow=T)
     tmp[,i]=rowSums(rasc)+log.theta[i] #sum log of prior probability
   }
-  tmp1=tmp-apply(tmp,1,max) #for numerical stability
-  tmp2=exp(tmp1) #exponentiate log probability
-  prob=tmp2/rowSums(tmp2) #normalize to sum to 1
   
-  #sample cluster assignments based on my customized multinomial distribution function
-  rmultinom1(prob=prob,randu=runif(nloc))+1
+  for (i in 1:nloc){
+    tab[z[i]]=tab[z[i]]-1
+    prob=rep(NA,ngroup)
+    cond=tab==0
+    prob[ cond]=-nspp*log(2)+log.theta[cond]
+    prob[!cond]=tmp[i,!cond]
+
+    #get normalized probs
+    tmp1=prob-max(prob) #for numerical stability
+    tmp2=exp(tmp1) #exponentiate log probability
+    prob=tmp2/sum(tmp2) #normalize to sum to 1
+
+    #draw from multinomial distrib
+    ind=rmultinom(1,size=1,prob=prob)
+    ind1=which(ind==1)
+    z[i]=ind1
+    tab[ind1]=tab[ind1]+1
+  }
+  z  
 }
 #--------------------------------------------
 
@@ -48,7 +66,22 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp){
 #' @param return this function returns a vector with the theta parameters
 #' @export
 #' 
-update.theta=function(z,ngroup,gamma1){
+update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
+  #re-order thetas. Based on that, re-order z's
+  if(gibbs.step<burnin & gibbs.step%%50==0){
+    ind=order(theta,decreasing=T)
+    theta=theta[ind]
+    phi=phi[ind,]
+    
+    #get z.new
+    z.new=z; z.new[]=NA
+    for (i in 1:ngroup){
+      cond=z==ind[i]
+      z.new[cond]=i
+    }
+    z=z.new
+  }
+
   #calculate the number of locations assigned to each group
   tmp=table(z)
   nk=rep(0,ngroup)
@@ -66,5 +99,25 @@ update.theta=function(z,ngroup,gamma1){
     theta[i]=v1[i]*tmp
     tmp=tmp*(1-v1[i])
   }
-  theta
+  
+  #to avoid numerical issues
+  cond=v>0.99999
+  v[cond]=0.99999
+  
+  list(theta=theta,z=z,v=v,phi=phi)
+}
+
+#----------------------------
+sample.gamma=function(v,ngroup,gamma.possib){
+  ngamma=length(gamma.possib)
+  soma=sum(log(1-v[-ngroup]))
+  k=(ngroup-1)*(lgamma(1+gamma.possib)-lgamma(gamma.possib))
+  res=k+(gamma.possib-1)*soma
+  # sum(dbeta(v[-ngroup],1,gamma.possib[5],log=T))
+  res=res-max(res)
+  res1=exp(res)
+  res2=res1/sum(res1)
+  tmp=rmultinom(1,size=1,prob=res2)
+  ind=which(tmp==1)
+  gamma.possib[ind]
 }

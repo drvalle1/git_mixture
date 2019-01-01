@@ -10,5 +10,5 @@ source('mixture gibbs main function.R')
 ngibbs=1000
 dat=data.matrix(read.csv('fake data.csv',as.is=T))
     
-res=mixture.gibbs.main.func(dat=dat,ngroup=50,gamma1=0.1,ngibbs=ngibbs)
+res=mixture.gibbs.main.func(dat=dat,ngroup=50,ngibbs=ngibbs,burnin=ngibbs/2)
     
