@@ -11,6 +11,7 @@
 #' @param ngroup  maximum number of location groups
 #' @param nloc number of locations
 #' @param nspp number of species
+#' @param z vector of size L containing the current cluster assignment for each location
 #' @param return this function returns a vector with the cluster assignment of each location
 #' @export
 
@@ -20,11 +21,12 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
   log.phi=log(phi)
   log.one.minus.phi=log(1-phi)
   
+  #determine the number of locations in each group
   tab=rep(0,ngroup)
   tmp=table(z)
   tab[as.numeric(names(tmp))]=tmp
   
-  #calculate the log probability for each possible group
+  #calculate the log probability for each group that already exists
   tmp=matrix(NA,nloc,ngroup)
   for (i in 1:ngroup){
     rasc=dat*matrix(log.phi[i,],nloc,nspp,byrow=T)+
@@ -32,11 +34,12 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
     tmp[,i]=rowSums(rasc)+log.theta[i] #sum log of prior probability
   }
   
+  #sample z
   for (i in 1:nloc){
     tab[z[i]]=tab[z[i]]-1
     prob=rep(NA,ngroup)
     cond=tab==0
-    prob[ cond]=-nspp*log(2)+log.theta[cond]
+    prob[ cond]=-nspp*log(2)+log.theta[cond] #log probability for a new group
     prob[!cond]=tmp[i,!cond]
 
     #get normalized probs
@@ -54,7 +57,7 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
 }
 #--------------------------------------------
 
-#' Samples theta parameters
+#' Samples theta and v parameters
 #' 
 #' This function samples the v parameters, which are then used to calculate the theta parameters
 #' 
@@ -63,11 +66,16 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
 #' @param gamma1 this is the truncated stick-breaking prior parameter for the 
 #'                number of location groups. This value should be between 0 and 1, and
 #'                small values enforce more parsimonius results (i.e., fewer groups)
-#' @param return this function returns a vector with the theta parameters
+#' @param burnin number of iterations to drop as part of burn-in phase
+#' @param gibbs.step number corresponding to the current iteration of gibbs sampler
+#' @param phi K x S matrix with the probability of observing each species in each group
+#' @param theta vector of length K with the proportion of each location group
+#' @param return this function returns a list of 4 items (theta, z, v, and phi)
 #' @export
 #' 
 update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
-  #re-order thetas. Based on that, re-order z's
+  #re-order thetas in decreasing order if in burn-in phase. 
+  #Based on this re-ordering, re-order z and phi
   if(gibbs.step<burnin & gibbs.step%%50==0){
     ind=order(theta,decreasing=T)
     theta=theta[ind]
@@ -104,19 +112,36 @@ update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
   cond=v>0.99999
   v[cond]=0.99999
   
+  #output results
   list(theta=theta,z=z,v=v,phi=phi)
 }
 
 #----------------------------
+#' Sample the TSB prior parameter
+#' 
+#' This function samples the truncated stick breaking (TSB) prior parameter gamma
+#' 
+#' @param v vector with the pieces of the unit 1 stick 
+#' @param ngroup maximum number of location groups
+#' @param gamma.possib vector of possible gamma parameter values
+#' @param return this function returns a real number corresponding to gamma
+#' @export
+#' 
+#' 
 sample.gamma=function(v,ngroup,gamma.possib){
+  #calculate the log probability associated with each possible value of gamma
   ngamma=length(gamma.possib)
   soma=sum(log(1-v[-ngroup]))
   k=(ngroup-1)*(lgamma(1+gamma.possib)-lgamma(gamma.possib))
   res=k+(gamma.possib-1)*soma
-  # sum(dbeta(v[-ngroup],1,gamma.possib[5],log=T))
+  #check this code: sum(dbeta(v[-ngroup],1,gamma.possib[5],log=T))
+  
+  #exponentiate and normalize probabilities
   res=res-max(res)
   res1=exp(res)
   res2=res1/sum(res1)
+  
+  #sample from a categorical distribution
   tmp=rmultinom(1,size=1,prob=res2)
   ind=which(tmp==1)
   gamma.possib[ind]
