@@ -1,18 +1,18 @@
-#' Samples the cluster assignment for each location
+#' Samples z
 #' 
-#' This function samples the cluster assignment for each location
+#' This function samples the cluster assignment for each location (z)
 #' 
-#' @param dat this matrix has L rows (e.g., locations) and S columns (e.g., species)
-#'            and contains the presence-absence data 
-#' @param one.minus.dat this matrix has L rows (e.g., locations) and S columns (e.g., species)
-#'            and is calculated as 1-dat           
+#' @param dat matrix with L rows (e.g., locations) and S columns (e.g., species),
+#'            containing the presence-absence data 
+#' @param one.minus.dat matrix with L rows (e.g., locations) and S columns (e.g., species),
+#'                      calculated as 1-dat           
 #' @param phi K x S matrix with the probability of observing each species in each group
-#' @param theta vector of length K with the proportion of each location group
-#' @param ngroup  maximum number of location groups
-#' @param nloc number of locations
-#' @param nspp number of species
+#' @param theta vector of length K with the probability of each location group
+#' @param ngroup  maximum number of location groups (K)
+#' @param nloc number of locations (L)
+#' @param nspp number of species (S)
 #' @param z vector of size L containing the current cluster assignment for each location
-#' @param return this function returns a vector with the cluster assignment of each location
+#' @param return this function returns a vector of size L with the cluster assignment of each location
 #' @export
 
 update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
@@ -61,21 +61,21 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
 #' 
 #' This function samples the v parameters, which are then used to calculate the theta parameters
 #' 
-#' @param z vector with cluster assignment of each location 
-#' @param ngroup maximum number of location groups
+#' @param z vector of size L with cluster assignment of each location 
+#' @param ngroup maximum number of location groups (K)
 #' @param gamma1 this is the truncated stick-breaking prior parameter for the 
 #'                number of location groups. This value should be between 0 and 1, and
 #'                small values enforce more parsimonius results (i.e., fewer groups)
 #' @param burnin number of iterations to drop as part of burn-in phase
-#' @param gibbs.step number corresponding to the current iteration of gibbs sampler
+#' @param gibbs.step current iteration of the gibbs sampler
 #' @param phi K x S matrix with the probability of observing each species in each group
-#' @param theta vector of length K with the proportion of each location group
+#' @param theta vector of length K with the probability of each location group
 #' @param return this function returns a list of 4 items (theta, z, v, and phi)
 #' @export
 #' 
 update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
   #re-order thetas in decreasing order if in burn-in phase. 
-  #Based on this re-ordering, re-order z and phi
+  #Based on this re-ordering, re-order z's and phi's
   if(gibbs.step<burnin & gibbs.step%%50==0){
     ind=order(theta,decreasing=T)
     theta=theta[ind]
@@ -121,8 +121,8 @@ update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
 #' 
 #' This function samples the truncated stick breaking (TSB) prior parameter gamma
 #' 
-#' @param v vector with the pieces of the unit 1 stick 
-#' @param ngroup maximum number of location groups
+#' @param v vector of length L with probabilities 
+#' @param ngroup maximum number of location groups (K)
 #' @param gamma.possib vector of possible gamma parameter values
 #' @param return this function returns a real number corresponding to gamma
 #' @export

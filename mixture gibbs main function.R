@@ -2,17 +2,18 @@
 #' 
 #' Runs the Gibbs sampler and returns samples from the posterior distribution
 #' 
-#' @param dat this matrix has L rows (e.g., locations) and S columns (e.g., species)
+#' @param dat this matrix has L rows (locations) and S columns (species)
 #'            and contains the presence-absence data 
-#' @param ngroup this is the maximum number of groups for locations
+#' @param ngroup maximum number of location groups (K)
 #' @param ngibbs number of Gibbs sampler iterations 
 #' @param burnin number of iterations to discard as burn-in             
-#' @param return this function returns a list containing several matrices, all of which have ngibbs rows:
-#'               - phi:   matrix with the estimated probability of observing each species in each group
-#'               - theta: matrix with the estimated proportion of each location group
-#'               - logl:  vector with the log-likelihood for each iteration
-#'               - z:     matrix with the cluster assignment of each location
-#'               - gamma: matrix with the TSB prior gamma parameter
+#' @param return this function returns a list containing several matrices.
+#'               These matrices have ngibbs-burnin rows and contain samples from the posterior distribution for:
+#'               - phi:   probability of observing each species in each group
+#'               - theta: probability of each location group
+#'               - logl:  log-likelihood 
+#'               - z:     cluster assignment of each location
+#'               - gamma: TSB prior parameter
 #' @export
 
 mixture.gibbs.main.func=function(dat,ngroup,ngibbs,burnin){
@@ -47,8 +48,8 @@ for (i in 1:ngibbs){
              ngroup=ngroup,nloc=nloc,nspp=nspp,z=z)
   
   #summarize the data
-  #determine the number of species that were observed (dat=1) in each group. This is ncs1
-  #determine the number of species that were not observed (dat=0) in each group. This is ncs0
+  #determine the number of times a particular species was observed in each location group. This is ncs1
+  #determine the number of times a particular species was not observed in each location group. This is ncs0
   tmp=ncs(dat=dat,z=z-1,nspp=nspp,nloc=nloc,ngroup=ngroup)
   
   #sample the phi matrix containing the spp composition characterization of each group of locations

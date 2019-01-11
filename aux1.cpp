@@ -10,16 +10,16 @@ using namespace Rcpp;
 
 //' Summarize the data
 //' 
-//' This function summarizes the data by calculating the number of locations in each 
-//' group and species for two cases: dat(i,j)=1 (stored in res1) and dat(i,j)=0 (stored in res0)
+//' This function summarizes the data by calculating the number of locations for each 
+//' location group and species for which dat(i,j)=1 (stored in res1) and dat(i,j)=0 (stored in res0)
 //' 
-//' @param dat this matrix has L rows (e.g., locations) and S columns (e.g., species)
-//'        and contains the presence-absence data
-//' @param z vector with cluster assignment for each location
-//' @param nspp number of species
-//' @param nloc number of locations
-//' @param ngroup maximum number of groups
-//' @return this function returns a list containing two matrices: res1 and res0
+//' @param dat matrix with L rows (e.g., locations) and S columns (e.g., species),
+//'        containing the presence-absence data
+//' @param z vector of size L with cluster assignment for each location
+//' @param nspp number of species (S)
+//' @param nloc number of locations (L)
+//' @param ngroup maximum number of groups (K)
+//' @return this function returns a list containing two matrices of size K x S: res1 and res0
 //' @export
 
 //' This function calculates ncs1 and ncs0
