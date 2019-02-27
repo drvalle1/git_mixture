@@ -7,13 +7,15 @@
 #' @param ngroup maximum number of location groups (K)
 #' @param ngibbs number of Gibbs sampler iterations 
 #' @param burnin number of iterations to discard as burn-in             
-#' @param return this function returns a list containing several matrices.
-#'               These matrices have ngibbs-burnin rows and contain samples from the posterior distribution for:
-#'               - phi:   probability of observing each species in each group
-#'               - theta: probability of each location group
-#'               - logl:  log-likelihood 
-#'               - z:     cluster assignment of each location
-#'               - gamma: TSB prior parameter
+#' @return this function returns a list containing several matrices.
+#'         These matrices have ngibbs-burnin rows and contain samples from the posterior distribution for:
+#'         \itemize{
+#'            \item phi:   probability of observing each species in each group
+#'            \item theta: probability of each location group
+#'            \item logl:  log-likelihood
+#'            \item z:     cluster assignment of each location
+#'            \item gamma: TSB prior parameter
+#'         }
 #' @export
 
 mixture.gibbs.main.func=function(dat,ngroup,ngibbs,burnin){

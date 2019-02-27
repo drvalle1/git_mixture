@@ -12,7 +12,7 @@
 #' @param nloc number of locations (L)
 #' @param nspp number of species (S)
 #' @param z vector of size L containing the current cluster assignment for each location
-#' @param return this function returns a vector of size L with the cluster assignment of each location
+#' @return this function returns a vector of size L with the cluster assignment of each location
 #' @export
 
 update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
@@ -70,7 +70,7 @@ update.z=function(dat,one.minus.dat,phi,theta,ngroup,nloc,nspp,z){
 #' @param gibbs.step current iteration of the gibbs sampler
 #' @param phi K x S matrix with the probability of observing each species in each group
 #' @param theta vector of length K with the probability of each location group
-#' @param return this function returns a list of 4 items (theta, z, v, and phi)
+#' @return this function returns a list of 4 items (theta, z, v, and phi)
 #' @export
 #' 
 update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
@@ -124,7 +124,7 @@ update.theta=function(z,ngroup,gamma1,burnin,gibbs.step,theta,phi){
 #' @param v vector of length L with probabilities 
 #' @param ngroup maximum number of location groups (K)
 #' @param gamma.possib vector of possible gamma parameter values
-#' @param return this function returns a real number corresponding to gamma
+#' @return this function returns a real number corresponding to gamma
 #' @export
 #' 
 #' 
